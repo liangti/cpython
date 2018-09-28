@@ -24,7 +24,8 @@ def job_wrapper(pool):
     jobs = []
     for i in range(100):
         jobs.append(pool.apply_async(func))
-
+    pool.close()
+    pool.join()
     for job in jobs:
         try:
             job.wait(timeout=TIMEOUT3)
@@ -50,7 +51,9 @@ class TestProcess(unittest.TestCase):
 class TestPoolTimeout(unittest.TestCase):
     def test_thread_pool_initialize(self):
         pool = multiprocessing.pool.ThreadPool(processes=multiprocessing.cpu_count()-1)
+        self.assertEqual(len(pool._pool), multiprocessing.cpu_count()-1)
         job_wrapper(pool)
+        
         for p in pool._pool:
             self.assertFalse(p.is_alive())
             self.assertEqual(p.exitcode, 0)
